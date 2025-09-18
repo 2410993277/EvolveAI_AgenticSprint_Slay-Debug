@@ -9,6 +9,10 @@ from django.template.loader import render_to_string
 import pandas as pd
 import os
 import json
+from django.contrib.auth.forms import PasswordResetForm
+from django.core.mail import send_mail
+from django.conf import settings
+
 import re
 import csv
 import openai
@@ -548,18 +552,23 @@ def signup_view(request):
 
 @never_cache
 def login_view(request):
+    # If user is already logged in → redirect to dashboard
+    if request.user.is_authenticated:
+        return redirect('CFO:dashboard')
+
     if request.method == "POST":
         form = LoginForm(request, data=request.POST)
         if form.is_valid():
             user = form.get_user()
             login(request, user)
+            messages.success(request, f"✅ Welcome back, {user.username}!")
             return redirect('CFO:dashboard')
         else:
-            messages.error(request, "Invalid username or password.")
+            messages.error(request, "❌ Invalid username or password.")
     else:
         form = LoginForm()
-    return render(request, 'CFO/login.html', {'form': form})
 
+    return render(request, 'CFO/login.html', {'form': form})
 
 @login_required(login_url='CFO:login')
 def logout_view(request):
@@ -1112,3 +1121,31 @@ def risk_alerts(request):
 @login_required
 def profile_view(request):
     return render(request, "CFO/profile.html")
+
+
+
+def forgot_password(request):
+    if request.method == "POST":
+        username = request.POST.get("username")
+        new_password = request.POST.get("new_password")
+        confirm_password = request.POST.get("confirm_password")
+
+        if not username or not new_password or not confirm_password:
+            messages.error(request, "All fields are required.")
+            return render(request, "CFO/forgot_password.html")
+
+        if new_password != confirm_password:
+            messages.error(request, "Passwords do not match.")
+            return render(request, "CFO/forgot_password.html")
+
+        try:
+            user = User.objects.get(username=username)
+            user.set_password(new_password)
+            user.save()
+            messages.success(request, "✅ Password reset successful! Please login.")
+            return render(request, "CFO/forgot_password.html")
+        except User.DoesNotExist:
+            messages.error(request, "❌ Username not found.")
+            return render(request, "CFO/forgot_password.html")
+
+    return render(request, "CFO/forgot_password.html")

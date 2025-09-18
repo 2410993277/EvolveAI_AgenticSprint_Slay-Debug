@@ -1,4 +1,4 @@
-from django.urls import path
+from django.urls import path, include
 from . import views
 
 app_name = "CFO"
@@ -10,6 +10,7 @@ urlpatterns = [
     # Authentication
     path('signup/', views.signup_view, name='signup'),
     path('login/', views.login_view, name='login'),
+    path('auth/', include('social_django.urls', namespace='social')),
     path('logout/', views.logout_view, name='logout'),
 
     # Reports & Dashboard
@@ -43,5 +44,6 @@ urlpatterns = [
     path("smart-insights/", views.smart_insights, name="smart_insights"),
     path("financial-health/", views.financial_health, name="financial_health"),
     path('risk-alerts/', views.risk_alerts, name='risk_alerts'),
-    path("profile/", views.profile_view, name="profile")
+    path("profile/", views.profile_view, name="profile"),
+    path('forgot-password/', views.forgot_password, name='forgot_password'),
 ]

@@ -50,6 +50,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'social_django.middleware.SocialAuthExceptionMiddleware',
 ]
 
 ROOT_URLCONF = 'Ai_Assistant.urls'
@@ -57,10 +58,11 @@ ROOT_URLCONF = 'Ai_Assistant.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / "templates"],  # add this if you keep custom templates in a folder
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
+                'django.template.context_processors.debug',
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
@@ -72,6 +74,7 @@ TEMPLATES = [
         },
     },
 ]
+
 
 WSGI_APPLICATION = 'Ai_Assistant.wsgi.application'
 
@@ -154,3 +157,5 @@ SOCIAL_AUTH_LINKEDIN_OAUTH2_SECRET = "your-linkedin-client-secret"
 
 LOGIN_REDIRECT_URL = '/'  
 LOGOUT_REDIRECT_URL = '/login/'
+
+
