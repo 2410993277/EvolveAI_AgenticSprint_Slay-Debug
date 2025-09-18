@@ -1,0 +1,104 @@
+{% extends "CFO/base.html" %}
+{% block content %}
+<div class="container py-5">
+
+  <h2 class="mb-5 text-center">🎯 My Goals Dashboard</h2>
+
+  <!-- Add Goal Form -->
+  <div class="card shadow-sm mb-5 border-0 rounded-4">
+    <div class="card-body">
+      <form method="POST" class="row g-4 align-items-end">
+        {% csrf_token %}
+        <div class="col-md-4">
+          <label class="form-label">{{ form.goal_type.label }}</label>
+          {{ form.goal_type }}
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">{{ form.target_value.label }}</label>
+          {{ form.target_value }}
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">{{ form.deadline.label }}</label>
+          {{ form.deadline }}
+        </div>
+        <div class="col-12 text-end">
+          <button type="submit" class="btn btn-success btn-lg rounded-pill">
+            ➕ Add Goal
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Goals List -->
+  {% if progress_items %}
+    <h4 class="mb-4 text-center">Your Goals Progress</h4>
+    <div class="row g-4">
+
+      {% for p in progress_items %}
+      <div class="col-lg-4 col-md-6">
+        <div class="card shadow-sm h-100 border-0 rounded-4">
+          <div class="card-body d-flex flex-column justify-content-between">
+
+            <!-- Goal Summary -->
+            <div class="mb-3">
+              <h6 class="text-primary fw-bold">{{ p.goal.get_goal_type_display }}</h6>
+              <p class="mb-1 text-muted small">Goal: <strong>₹{{ p.goal.target_value|floatformat:0 }}</strong></p>
+              <p class="mb-1 text-muted small">Deadline: <strong>{{ p.goal.deadline|date:"d M Y" }}</strong></p>
+              <p class="mb-3 text-dark">Achieved: <strong>₹{{ p.actual|floatformat:0 }}</strong></p>
+            </div>
+
+            <!-- Progress Explanation -->
+            <div class="mb-2">
+              <p class="small text-muted">
+                {% if p.progress_pct >= 100 %}
+                  You have reached your goal! 🎉 This means you achieved 100% or more of what you aimed for.
+                {% elif p.progress_pct >= 50 %}
+                  You're on track! 💪 You've completed {{ p.progress_pct|floatformat:0 }}% of your goal.
+                {% else %}
+                  Keep going! ⏳ You've completed only {{ p.progress_pct|floatformat:0 }}% of your goal. Focus on progress.
+                {% endif %}
+              </p>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="mb-3">
+              <div class="progress rounded-pill" style="height: 20px;">
+                <div class="progress-bar {% if p.progress_pct >= 100 %} bg-success {% elif p.progress_pct >= 50 %} bg-info {% else %} bg-warning {% endif %}" 
+                     role="progressbar"
+                     style="width: {{ p.progress_width|floatformat:0 }}%;"
+                     aria-valuenow="{{ p.progress_pct|floatformat:0 }}"
+                     aria-valuemin="0"
+                     aria-valuemax="100">
+                     {{ p.progress_pct|floatformat:0 }}%
+                </div>
+              </div>
+            </div>
+
+            <!-- Status Badge -->
+            <div class="text-center mt-auto">
+              <span class="badge {% if p.progress_pct >= 100 %} bg-success {% elif p.progress_pct >= 50 %} bg-info {% else %} bg-warning {% endif %} rounded-pill px-3 py-2">
+                {% if p.progress_pct >= 100 %}
+                  ✅ Goal Achieved
+                {% elif p.progress_pct >= 50 %}
+                  ⚡ On Track
+                {% else %}
+                  ⏳ Keep Going
+                {% endif %}
+              </span>
+            </div>
+
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+
+    </div>
+  {% else %}
+    <div class="alert alert-info text-center mt-5 p-4 rounded-4">
+      No goals set yet. Add your first goal above! 🎯
+    </div>
+  {% endif %}
+
+</div>
+{% endblock %}

@@ -1,0 +1,22 @@
+/* static/CFO/css/style.css */
+body { background: #f7f9fc; }
+#wrapper { min-height: 100vh; }
+
+#sidebar {
+  width: 230px;
+  transition: width .25s;
+  min-height: 100vh;
+}
+#sidebar.collapsed { width: 70px; }
+#sidebar .sidebar-heading { border-bottom: 1px solid #eee; }
+#sidebar .list-group-item { border: none; }
+
+#page-content { min-width: 0; }
+
+.hero-card { background: white; border-radius: 10px; box-shadow: 0 6px 18px rgba(0,0,0,0.04); }
+.card { border-radius: 10px; }
+
+/* smaller screens */
+@media (max-width: 768px) {
+  #sidebar { display: none; }
+}

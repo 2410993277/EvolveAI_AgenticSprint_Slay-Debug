@@ -1,0 +1,170 @@
+{% extends "CFO/base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container py-5">
+
+  <h2 class="mb-4">📊 Reports Generator</h2>
+
+  <!-- Filter Form -->
+  <div class="card shadow-sm mb-4">
+    <div class="card-body">
+      <form method="POST" class="row g-3">
+        {% csrf_token %}
+        <div class="col-md-4">
+          {{ form.start_date.label_tag }}
+          {{ form.start_date }}
+        </div>
+        <div class="col-md-4">
+          {{ form.end_date.label_tag }}
+          {{ form.end_date }}
+        </div>
+        <div class="col-md-4">
+          {{ form.report_type.label_tag }}
+          {{ form.report_type }}
+        </div>
+        <div class="col-12 text-end">
+          <button type="submit" class="btn btn-primary">Generate</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  {% if report %}
+    <h5 class="mb-3">Showing <strong>{{ report_type }}</strong> report</h5>
+
+    <div class="row g-4">
+
+      <!-- KPI Cards -->
+      <div class="col-md-3">
+        <div class="card shadow text-center border-start border-4 border-success">
+          <div class="card-body">
+            <h6>Total Revenue</h6>
+            <h4 class="text-success">₹{{ report.total_revenue|floatformat:2 }}</h4>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-3">
+        <div class="card shadow text-center border-start border-4 border-primary">
+          <div class="card-body">
+            <h6>Total Profit</h6>
+            <h4 class="text-primary">₹{{ report.total_profit|floatformat:2 }}</h4>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-3">
+        <div class="card shadow text-center border-start border-4 border-danger">
+          <div class="card-body">
+            <h6>Total Expense</h6>
+            <h4 class="text-danger">₹{{ report.total_expense|floatformat:2 }}</h4>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-3">
+        <div class="card shadow text-center border-start border-4 border-warning">
+          <div class="card-body">
+            <h6>Cash Balance</h6>
+            <h4 class="text-warning">₹{{ report.cash_balance|floatformat:2 }}</h4>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Advanced KPIs -->
+    <div class="row g-4 mt-4">
+      <div class="col-md-3">
+        <div class="card shadow text-center">
+          <div class="card-body">
+            <h6>Revenue Growth</h6>
+            <h5>{{ report.revenue_growth|floatformat:2 }}%</h5>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card shadow text-center">
+          <div class="card-body">
+            <h6>Profit Margin</h6>
+            <h5>{{ report.profit_margin|floatformat:2 }}%</h5>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card shadow text-center">
+          <div class="card-body">
+            <h6>Burn Rate</h6>
+            <h5>₹{{ report.burn_rate|floatformat:2 }}</h5>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card shadow text-center">
+          <div class="card-body">
+            <h6>Runway</h6>
+            <h5>{{ report.runway|floatformat:1 }} months</h5>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Risk Flag -->
+    {% if report.risk_flag %}
+    <div class="mt-4">
+      <div class="alert 
+        {% if report.risk_flag == 'High Risk' %} alert-danger 
+        {% elif report.risk_flag == 'Moderate/OK' %} alert-warning 
+        {% else %} alert-success {% endif %}">
+        <strong>Risk Assessment:</strong> {{ report.risk_flag }}
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Trend Chart -->
+    {% if chart_data %}
+    <div class="card shadow mt-4">
+      <div class="card-header bg-primary text-white">📈 Financial Trend (Last 12 Reports)</div>
+      <div class="card-body">
+        <canvas id="reportChart" height="150"></canvas>
+      </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+      const data = JSON.parse('{{ chart_data|escapejs }}');
+      const labels = data.map(r => r.Month);
+      const revenue = data.map(r => r.Revenue);
+      const profit = data.map(r => r.Profit);
+      const cash = data.map(r => r.Cash);
+
+      if(window.reportChart instanceof Chart) window.reportChart.destroy();
+
+      window.reportChart = new Chart(document.getElementById('reportChart'), {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [
+            { label: 'Revenue (₹)', data: revenue, borderColor: '#22c55e', fill: true, backgroundColor: 'rgba(34,197,94,0.08)', tension:0.3 },
+            { label: 'Profit (₹)', data: profit, borderColor: '#0d6efd', fill: true, backgroundColor: 'rgba(13,110,253,0.08)', tension:0.3 },
+            { label: 'Cash Balance (₹)', data: cash, borderColor: '#f97316', fill: true, backgroundColor: 'rgba(249,115,22,0.08)', tension:0.3 }
+          ]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { position: 'bottom' } },
+          interaction: { mode: 'nearest', axis: 'x', intersect: false },
+          scales: { y: { beginAtZero: true, title: { display: true, text: 'Amount (₹)' } }, x: { title: { display: true, text: 'Month' } } }
+        }
+      });
+    </script>
+    {% endif %}
+
+  {% else %}
+    <div class="alert alert-info mt-4">
+      No report found for selected dates and report type. Please try again.
+    </div>
+  {% endif %}
+
+</div>
+{% endblock %}

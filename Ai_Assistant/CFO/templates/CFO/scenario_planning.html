@@ -1,0 +1,187 @@
+{% extends "CFO/base.html" %}
+{% load static %}
+{% block content %}
+
+<div class="container py-5">
+
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2 class="fw-bold text-primary"><i class="bi bi-lightbulb"></i> Scenario Planning</h2>
+      <p class="text-muted">Simulate different financial futures by adjusting assumptions.</p>
+    </div>
+    <a href="{% url 'CFO:dashboard' %}" class="btn btn-outline-secondary">⬅ Back to Dashboard</a>
+  </div>
+
+  {% if results %}
+  <!-- KPI Cards -->
+  <div class="row g-4 mb-4">
+    <div class="col-md-3">
+      <div class="card shadow-sm h-100 text-center p-3 border-start border-4 border-success">
+        <small class="text-muted">Projected Revenue</small>
+        <h3 class="mt-2">₹{{ projected_revenue|floatformat:0 }}</h3>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card shadow-sm h-100 text-center p-3 border-start border-4 border-danger">
+        <small class="text-muted">Projected Expense</small>
+        <h3 class="mt-2">₹{{ projected_expense|floatformat:0 }}</h3>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card shadow-sm h-100 text-center p-3 border-start border-4 border-primary">
+        <small class="text-muted">Projected Profit</small>
+        <h3 class="mt-2">₹{{ projected_profit|floatformat:0 }}</h3>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card shadow-sm h-100 text-center p-3 border-start border-4 border-warning">
+        <small class="text-muted">Projected Cash</small>
+        <h3 class="mt-2">₹{{ projected_cash|floatformat:0 }}</h3>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Assumptions Form -->
+  <div class="card shadow-sm mb-4">
+    <div class="card-header bg-primary text-white fw-bold">
+      <i class="bi bi-sliders"></i> Enter Assumptions
+    </div>
+    <div class="card-body">
+      <form method="post" class="row g-3">
+        {% csrf_token %}
+        <div class="col-md-6">
+          <label class="form-label">Revenue Growth (%)</label>
+          {{ form.revenue_growth }}
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Expense Growth (%)</label>
+          {{ form.expense_growth }}
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Cash Infusion (₹)</label>
+          {{ form.cash_infusion }}
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Projection Months</label>
+          {{ form.months }}
+        </div>
+
+        <div class="col-12 text-end">
+          <button type="submit" class="btn btn-success px-4"><i class="bi bi-play-circle"></i> Run Projection</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  {% if results %}
+  <div class="row g-4">
+    <div class="col-lg-8">
+      <!-- Projection Table -->
+      <div class="card shadow-sm mb-4">
+        <div class="card-header bg-success text-white fw-bold"><i class="bi bi-bar-chart-line"></i> Projection Results</div>
+        <div class="card-body table-responsive">
+          <table class="table table-hover table-striped text-center align-middle">
+            <thead class="table-light">
+              <tr>
+                <th>Month</th><th>Revenue (₹)</th><th>Expense (₹)</th><th>Cash Balance (₹)</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for row in results %}
+              <tr>
+                <td>{{ row.Month }}</td>
+                <td class="text-success fw-bold">₹{{ row.Revenue }}</td>
+                <td class="text-danger fw-bold">₹{{ row.Expense }}</td>
+                <td class="fw-bold {% if row.Cash < 0 %}text-danger{% else %}text-primary{% endif %}">₹{{ row.Cash }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Projection Chart -->
+      <div class="card shadow-sm mb-4">
+        <div class="card-header bg-info text-white fw-bold"><i class="bi bi-graph-up"></i> Financial Projection Chart</div>
+        <div class="card-body">
+          <canvas id="projectionChart" height="160"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-4">
+      <!-- AI Insights -->
+      <div class="card shadow-sm mb-4">
+        <div class="card-header bg-warning fw-bold"><i class="bi bi-robot"></i> AI Insights</div>
+        <div class="card-body">
+          <ul class="list-group list-group-flush">
+            {% with last=results|last %}
+              {% if last.Cash < 0 %}
+                <li class="list-group-item text-danger">🚨 Warning: Cash balance will go negative by {{ last.Month }}.</li>
+              {% elif last.Cash < 20000 %}
+                <li class="list-group-item text-warning">⚠️ Cash reserves are low (&lt; ₹20k) at end of projection.</li>
+              {% else %}
+                <li class="list-group-item text-success">✅ Cash balance remains positive throughout projection.</li>
+              {% endif %}
+            {% endwith %}
+            <li class="list-group-item">📊 Adjust assumptions to explore best and worst-case scenarios.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+</div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  try {
+    if (!'{{ chart_data|default:"[]"|escapejs }}' || '{{ chart_data|default:"[]"|escapejs }}' === '[]') return;
+    const chartData = JSON.parse('{{ chart_data|escapejs }}');
+
+    const labels = chartData.map(r => r.Month);
+    const revenue = chartData.map(r => Number(r.Revenue));
+    const expense = chartData.map(r => Number(r.Expense));
+    const cash = chartData.map(r => Number(r.Cash));
+
+    const ctx = document.getElementById('projectionChart').getContext('2d');
+    if (window.projectionChart instanceof Chart) window.projectionChart.destroy();
+
+    window.projectionChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [
+          { label: 'Revenue', data: revenue, borderColor: '#22c55e', backgroundColor: 'rgba(34,197,94,0.1)', fill:true, tension:0.3 },
+          { label: 'Expense', data: expense, borderColor: '#ef4444', backgroundColor: 'rgba(239,68,68,0.1)', fill:true, tension:0.3 },
+          { label: 'Cash Balance', data: cash, borderColor: '#2563eb', backgroundColor: 'rgba(37,99,235,0.1)', fill:true, tension:0.3 }
+        ]
+      },
+      options: {
+        responsive:true,
+        plugins:{ legend:{ position:'bottom' }, tooltip:{ mode:'index', intersect:false } },
+        interaction:{ mode:'nearest', axis:'x', intersect:false },
+        scales:{
+          y:{ beginAtZero:true, title:{ display:true, text:'Amount (₹)' } },
+          x:{ title:{ display:true, text:'Month' } }
+        }
+      }
+    });
+  } catch(e) { console.error('Error rendering chart:', e); }
+});
+</script>
+
+<!-- Styling -->
+<style>
+body { background-color: #f4f5f7; }
+.card { border-radius: 0.75rem; }
+.card-header { font-size: 1rem; }
+.table-hover tbody tr:hover { background-color: rgba(13,110,253,0.05); }
+.form-control { border-radius: 0.5rem; }
+</style>
+
+{% endblock %}

@@ -1,0 +1,33 @@
+{% extends "CFO/base.html" %}
+{% block content %}
+
+<div class="container py-5">
+    <h2 class="mb-4">🚨 Risk Alerts</h2>
+
+    {% if report %}
+        <div class="card p-4 shadow-sm mb-4">
+            <h5>{{ report.title }}</h5>
+            <p><strong>Uploaded:</strong> {{ report.uploaded_at|date:"M d, Y H:i" }}</p>
+            <p><strong>Total Revenue:</strong> ${{ report.total_revenue }}</p>
+            <p><strong>Total Expense:</strong> ${{ report.total_expense }}</p>
+            <p><strong>Total Profit:</strong> ${{ report.total_profit }}</p>
+            <p><strong>Cash Balance:</strong> ${{ report.cash_balance }}</p>
+            <p><strong>Revenue Growth:</strong> {{ report.revenue_growth }}%</p>
+            <p><strong>Profit Margin:</strong> {{ report.profit_margin }}%</p>
+            <p><strong>Burn Rate:</strong> ${{ report.burn_rate }} / month</p>
+            <p><strong>Runway:</strong> {{ report.runway_months }} months</p>
+            <p><strong>Risk Flag:</strong> {{ report.risk_flag }}</p>
+        </div>
+    {% endif %}
+
+    <div class="card p-4 shadow-sm">
+        <h5>Risk Analysis</h5>
+        <ul>
+            {% for alert in alerts %}
+                <li>{{ alert }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+
+{% endblock %}

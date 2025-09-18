@@ -1,0 +1,276 @@
+{% extends "CFO/base.html" %}
+{% load static %}
+{% block content %}
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<style>
+  body { background: #f8f9fc; font-family: 'Inter', sans-serif; }
+  h2, h5 { color: #212529; font-weight: 700; }
+
+  .dashboard-header { border-bottom: 2px solid #eaecef; padding-bottom: 1rem; margin-bottom: 2rem; }
+
+  /* KPI Cards */
+  .kpi-card {
+    background: #ffffff;
+    border: 1px solid #eaecef;
+    border-radius: 0.75rem;
+    text-align: center;
+    padding: 1.2rem 1rem;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .kpi-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 18px rgba(0,0,0,0.08);
+  }
+  .kpi-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0;
+    color: #0d6efd;
+  }
+  .kpi-label { font-size: 0.85rem; color: #6c757d; }
+
+  /* Risk Badge */
+  .risk-badge {
+    font-size: 0.85rem;
+    padding: 0.35rem 0.9rem;
+    border-radius: 999px;
+    font-weight: 600;
+  }
+
+  /* Cards / Chart Containers */
+  .card {
+    background: #ffffff;
+    border: 1px solid #eaecef;
+    border-radius: 0.75rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .chart-container {
+    position: relative;
+    flex-grow: 1;
+    min-height: 200px;
+  }
+
+  /* Table */
+  .table th, .table td { vertical-align: middle; }
+  .table thead { background-color: #f1f3f6; }
+
+  /* Recommendations */
+  .list-group-item {
+    background: transparent;
+    border: none;
+    padding-left: 0;
+    font-size: 0.95rem;
+  }
+</style>
+
+<div class="container py-4">
+
+  <!-- Header -->
+  <div class="dashboard-header d-flex justify-content-between align-items-center">
+    <div>
+      <h2>{{ report.title }}</h2>
+      <p class="text-muted mb-0">Uploaded on {{ report.uploaded_at|date:"F j, Y, g:i a" }}</p>
+    </div>
+    <div>
+      <a href="{% url 'CFO:dashboard' %}" class="btn btn-outline-secondary me-2">⬅ Back</a>
+      <a href="{% url 'CFO:download_report_pdf' report.id %}" class="btn btn-primary">⬇ Download PDF</a>
+
+    </div>
+  </div>
+
+  <!-- KPI Cards -->
+  <div class="row g-3 mb-4">
+    <div class="col-md-3"><div class="kpi-card"><p class="kpi-value">{{ kpis.revenue_growth|floatformat:2 }}%</p><p class="kpi-label">Revenue Growth</p></div></div>
+    <div class="col-md-3"><div class="kpi-card"><p class="kpi-value">{{ kpis.profit_margin|floatformat:2 }}%</p><p class="kpi-label">Profit Margin</p></div></div>
+    <div class="col-md-3"><div class="kpi-card"><p class="kpi-value">₹{{ kpis.burn_rate|floatformat:0 }}</p><p class="kpi-label">Burn Rate</p></div></div>
+    <div class="col-md-3"><div class="kpi-card"><p class="kpi-value">{{ kpis.runway|floatformat:1 }} mo</p><p class="kpi-label">Runway</p></div></div>
+  </div>
+
+  <!-- Risk Badge -->
+  <h5 class="mb-2">Risk Assessment</h5>
+  <span class="risk-badge 
+        {% if report.risk_flag == 'High Risk' %}bg-danger text-white
+        {% elif report.risk_flag == 'Moderate/OK' %}bg-warning text-dark
+        {% else %}bg-success text-white{% endif %}">
+    {{ report.risk_flag|default:"No Risk Flag" }}
+  </span>
+
+  <!-- Charts -->
+  <div class="row g-3 mt-4">
+    <div class="col-md-6">
+      <div class="card p-3">
+        <h5>Revenue vs Profit</h5>
+        <div class="chart-container">
+          <canvas id="revenueProfitChart"></canvas>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="card p-3">
+        <h5>Expense vs Cash Balance</h5>
+        <div class="chart-container">
+          <canvas id="expenseChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-3 mt-3">
+    <div class="col-md-4">
+      <div class="card p-3">
+        <h5>Runway & Burn Rate</h5>
+        <div class="chart-container">
+          <canvas id="riskChart"></canvas>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card p-3">
+        <h5>Revenue & Profit Trend</h5>
+        <div class="chart-container">
+          <canvas id="trendChart"></canvas>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card p-3">
+        <h5>Cash Flow Trend</h5>
+        <div class="chart-container">
+          <canvas id="cashFlowChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cash Flow Summary -->
+  <div class="card p-3 mt-4">
+    <h5>Cash Flow Summary</h5>
+    <table class="table table-striped mt-2">
+      <thead>
+        <tr>
+          <th>Total Revenue</th><th>Total Profit</th><th>Total Expense</th><th>Cash Balance</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>₹{{ kpis.total_revenue|default:0|floatformat:0 }}</td>
+          <td>₹{{ kpis.total_profit|default:0|floatformat:0 }}</td>
+          <td>₹{{ kpis.total_expense|default:0|floatformat:0 }}</td>
+          <td>₹{{ kpis.cash_balance|default:0|floatformat:0 }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Recommendations -->
+  <div class="card p-3 mt-3">
+    <h5>AI Insights & Recommendations</h5>
+    <ul class="list-group list-group-flush mt-2">
+      {% if kpis.runway < 6 %}
+        <li class="list-group-item text-danger">🚨 Runway below 6 months: take immediate actions.</li>
+      {% endif %}
+      {% if kpis.profit_margin < 0 %}
+        <li class="list-group-item text-warning">⚠️ Negative profit margin detected — review costs.</li>
+      {% endif %}
+      {% if kpis.revenue_growth < 0 %}
+        <li class="list-group-item text-warning">📉 Revenue declining — investigate channels.</li>
+      {% endif %}
+      <li class="list-group-item">✅ Maintain adequate cash reserves and monitor vendors.</li>
+    </ul>
+  </div>
+
+</div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{{ chart_data|json_script:"chart-data" }}
+<script>
+const chartData = JSON.parse(document.getElementById('chart-data').textContent);
+function safeNumberArray(arr){ return arr.map(x => Number(x||0)); }
+const labels = chartData.labels.map(x=>x||''), revenue = safeNumberArray(chartData.revenue),
+      profit = safeNumberArray(chartData.profit), expense = safeNumberArray(chartData.expense),
+      cash = safeNumberArray(chartData.cash);
+
+const kpisData = {
+  revenue: Number("{{ kpis.total_revenue|default:0 }}"),
+  profit: Number("{{ kpis.total_profit|default:0 }}"),
+  expense: Number("{{ kpis.total_expense|default:0 }}"),
+  cash: Number("{{ kpis.cash_balance|default:0 }}"),
+  burn: Number("{{ kpis.burn_rate|default:0 }}"),
+  runway: Number("{{ kpis.runway|default:0 }}")
+};
+
+const chartOptions = {
+  responsive:true,
+  maintainAspectRatio:false,
+  plugins:{legend:{display:true}},
+  scales:{y:{beginAtZero:true}}
+};
+
+new Chart(document.getElementById('revenueProfitChart'), {
+  type:'bar',
+  data:{
+    labels:['Revenue','Profit'],
+    datasets:[{
+      data:[kpisData.revenue,kpisData.profit],
+      backgroundColor:['#4CAF50','#2196F3'],
+      barThickness:30,
+      borderRadius:6
+    }]
+  },
+  options:chartOptions
+});
+
+new Chart(document.getElementById('expenseChart'), {
+  type:'doughnut',
+  data:{labels:['Expense','Cash'],datasets:[{data:[kpisData.expense,kpisData.cash],backgroundColor:['#FF5252','#FFB300']}]},
+  options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'}}}
+});
+
+new Chart(document.getElementById('trendChart'), {
+  type:'line',
+  data:{labels,datasets:[
+    {label:'Revenue',data:revenue,borderColor:'#4CAF50',fill:false,tension:0.3},
+    {label:'Profit',data:profit,borderColor:'#2196F3',fill:false,tension:0.3}
+  ]},
+  options:chartOptions
+});
+
+new Chart(document.getElementById('cashFlowChart'), {
+  type:'line',
+  data:{labels,datasets:[
+    {label:'Cash',data:cash,borderColor:'#FFB300',fill:false,tension:0.3},
+    {label:'Expense',data:expense,borderColor:'#FF5252',fill:false,tension:0.3}
+  ]},
+  options:chartOptions
+});
+
+// Horizontal chart for Runway & Burn Rate
+new Chart(document.getElementById('riskChart'), {
+  type:'bar',
+  data:{
+    labels:['Runway (mo)','Burn Rate (₹)'],
+    datasets:[{
+      data:[kpisData.runway,kpisData.burn],
+      backgroundColor:[kpisData.runway<6?'#FF5252':'#4CAF50',kpisData.burn>10000?'#FF5252':'#4CAF50'],
+      borderRadius:6,
+      barThickness:20
+    }]
+  },
+  options:{
+    responsive:true,
+    maintainAspectRatio:false,
+    indexAxis:'y', /* Horizontal bar chart */
+    scales:{x:{beginAtZero:true}}
+  }
+});
+</script>
+
+{% endblock %}

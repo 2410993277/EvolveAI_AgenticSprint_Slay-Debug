@@ -1,0 +1,103 @@
+{% extends "CFO/base.html" %}
+
+{% block content %}
+<style>
+    body {
+        background: linear-gradient(135deg, #f4f7fb, #e8f5e9);
+        font-family: 'Inter', sans-serif;
+    }
+    .hero-section {
+        max-width: 850px;
+        background: #fff;
+        padding: 2rem 2rem;
+        border-radius: 1.5rem;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+        transition: all 0.3s ease-in-out;
+    }
+    .hero-section:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 35px rgba(0,0,0,0.12);
+    }
+    .hero-title {
+        font-weight: 700;
+        font-size: 2.5rem;
+    }
+    .btn-modern {
+        border-radius: 30px;
+        padding: 12px 28px;
+        font-weight: 600;
+        transition: all 0.3s;
+    }
+    .btn-modern:hover {
+        transform: scale(1.05);
+        box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+    }
+    .feature-card {
+        border-radius: 1rem;
+        padding: 1.5rem;
+        background: #fff;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        transition: all 0.3s ease-in-out;
+        text-align: center;
+    }
+    .feature-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+    }
+    .feature-card i {
+        display: inline-block;
+        padding: 16px;
+        border-radius: 50%;
+        background: #f9fafb;
+    }
+</style>
+
+<div class="container d-flex flex-column align-items-center justify-content-center min-vh-100 text-center">
+    
+    <!-- Hero Section -->
+    <div class="hero-section">
+        <h1 class="hero-title text-dark mb-3">
+            Welcome to <span class="text-success">CFO Assistant</span>
+        </h1>
+        <p class="text-muted mb-4 lead">
+            The AI-powered platform helping startups make <span class="fw-semibold">smarter, data-driven</span> financial decisions in real-time.
+        </p>
+        
+        <!-- CTA Buttons -->
+        <div class="d-flex justify-content-center gap-3 mb-5">
+            <a href="{% url 'CFO:login' %}" class="btn btn-success btn-modern">Get Started</a>
+            <a href="{% url 'CFO:upload_report' %}" class="btn btn-outline-dark btn-modern">Upload Report</a>
+        </div>
+
+        <!-- Features Section -->
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="feature-card h-100">
+                    <i class="bi bi-graph-up-arrow fs-3 text-success"></i>
+                    <h6 class="fw-semibold mt-3">Real-time Analytics</h6>
+                    <p class="text-muted small mb-0">Get instant insights into your financial reports and growth trends.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="feature-card h-100">
+                    <i class="bi bi-shield-check fs-3 text-primary"></i>
+                    <h6 class="fw-semibold mt-3">Reliable Insights</h6>
+                    <p class="text-muted small mb-0">AI ensures accuracy and reliability for critical financial decisions.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="feature-card h-100">
+                    <i class="bi bi-lightbulb fs-3 text-warning"></i>
+                    <h6 class="fw-semibold mt-3">Smart AI Suggestions</h6>
+                    <p class="text-muted small mb-0">Automated advice to optimize your cash flow, revenue, and risks.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer Teaser -->
+    <div class="mt-5 text-muted small">
+        <p>© 2025 CFO Assistant · Built for Startups · Financial Intelligence with AI</p>
+    </div>
+</div>
+{% endblock %}

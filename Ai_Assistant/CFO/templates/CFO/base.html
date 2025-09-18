@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI-CFO Assistant</title>
+
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+  <!-- Google Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, #f8f9fa, #eef2f7);
+      color: #212529;
+      min-height: 100vh;
+      transition: all 0.3s ease-in-out;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      height: 100vh;
+      background: linear-gradient(160deg, #527a69 0%, #127f5d 100%);
+      color: #fff;
+      width: 250px;
+      position: sticky;
+      top: 0;
+      padding-top: 15px;
+      box-shadow: 2px 0 12px rgba(0,0,0,0.15);
+      transition: all 0.3s ease-in-out;
+    }
+    .sidebar h4 {
+      font-weight: 600;
+      font-size: 1.2rem;
+      padding-left: 10px;
+    }
+    .sidebar a {
+      display: block;
+      padding: 10px 16px;
+      margin: 4px 0;
+      color: #f8f9fa;
+      text-decoration: none;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      transition: all 0.3s;
+    }
+    .sidebar a:hover, .sidebar a.active {
+      background: rgba(255,255,255,0.15);
+      transform: translateX(5px);
+    }
+    .sidebar .badge {
+      font-size: 0.65rem;
+    }
+
+    /* Navbar */
+    .navbar {
+      background: #fff;
+      /* padding: 5px 10px; */
+      border-bottom: 1px solid #dee2e6;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+      transition: all 0.3s ease-in-out;
+    }
+    .navbar .nav-link, .navbar .navbar-brand {
+      color: #212529;
+    }
+
+    /* Cards */
+    .upload-box, .stat-card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+      transition: all 0.3s ease-in-out;
+      margin: 30px;
+    }
+    .upload-box:hover, .stat-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+    }
+
+    /* Buttons */
+    .btn-primary, .btn-success, .btn-outline-secondary, .btn-outline-info {
+      border-radius: 6px;
+      transition: all 0.3s ease-in-out;
+    }
+    .btn-mode {
+      border-radius: 30px;
+      padding: 6px 14px;
+    }
+
+/* Base */
+body.dark-theme {
+    background-color: #181818; /* deep dark gray */
+    color: #e0e0e0;           /* soft whitish text */
+    font-family: 'Segoe UI', sans-serif;
+    transition: all 0.3s ease;
+}
+
+/* Cards & Containers */
+.dark-theme .card,
+.dark-theme .card-body,
+.dark-theme .container {
+    background-color: #242424;  /* distinguish from background */
+    border: 1px solid #333;
+    border-radius: 1rem;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    color: #e0e0e0;
+}
+
+/* Headings */
+.dark-theme h1, .dark-theme h2, .dark-theme h3,
+.dark-theme h4, .dark-theme h5, .dark-theme h6 {
+    color: #ffffff;
+}
+
+/* Links */
+.dark-theme a {
+    color: #4a90e2;
+    text-decoration: none;
+}
+.dark-theme a:hover {
+    color: #7abaff;
+}
+
+/* Forms */
+.dark-theme .form-control,
+.dark-theme .form-select,
+.dark-theme textarea {
+    background-color: #2b2b2b;
+    color: #e0e0e0;
+    border: 1px solid #444;
+    border-radius: 0.5rem;
+}
+.dark-theme .form-label {
+    color: #c0c0c0;
+}
+
+/* Buttons */
+.dark-theme .btn-primary {
+    background-color: #4a90e2;
+    border-color: #4a90e2;
+    color: #fff;
+}
+.dark-theme .btn-primary:hover {
+    background-color: #357abd;
+    border-color: #357abd;
+}
+.dark-theme .btn-success {
+    background-color: #28a745;
+    border-color: #28a745;
+    color: #fff;
+}
+.dark-theme .btn-success:hover {
+    background-color: #1e7e34;
+}
+.dark-theme .btn-warning {
+    background-color: #ffc107;
+    border-color: #ffc107;
+    color: #1b1b1b;
+}
+.dark-theme .btn-warning:hover {
+    background-color: #e0a800;
+}
+
+/* Alerts */
+.dark-theme .alert {
+    background-color: #2b2b2b;
+    color: #e0e0e0;
+    border: 1px solid #444;
+}
+
+/* Tables */
+.dark-theme table {
+    background-color: #242424;
+    color: #e0e0e0;
+}
+.dark-theme th,
+.dark-theme td {
+    border: 1px solid #333;
+}
+
+/* Progress Bars */
+.dark-theme .progress {
+    background-color: #333;
+    border-radius: 1rem;
+}
+.dark-theme .progress-bar {
+    border-radius: 1rem;
+}
+.dark-theme .progress-bar.bg-info {
+    background-color: #4a90e2;
+}
+.dark-theme .progress-bar.bg-success {
+    background-color: #28a745;
+}
+.dark-theme .progress-bar.bg-danger {
+    background-color: #dc3545;
+}
+
+/* Navbar / Sidebar */
+.dark-theme .navbar,
+.dark-theme .sidebar {
+    background-color: #1f1f1f;
+    color: #e0e0e0;
+}
+
+/* Badges */
+.dark-theme .badge {
+    background-color: #4a90e2;
+    color: #fff;
+    border-radius: 0.75rem;
+}
+
+/* Scrollbars (optional) */
+.dark-theme ::-webkit-scrollbar {
+    width: 10px;
+}
+.dark-theme ::-webkit-scrollbar-thumb {
+    background-color: #555;
+    border-radius: 5px;
+}
+.dark-theme ::-webkit-scrollbar-track {
+    background-color: #222;
+}
+
+/* Hover Effects */
+.dark-theme .card:hover {
+    background-color: #2e2e2e;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.6);
+}
+.dark-theme .btn:hover {
+    opacity: 0.9;
+}
+
+/* Charts */
+.dark-theme canvas {
+    background-color: transparent !important;
+}
+
+
+  </style>
+</head>
+<body class="{% if request.user.preference.dark_mode %}dark-theme{% endif %}
+             {% if request.user.preference.high_contrast %} high-contrast{% endif %}">
+
+  <div class="d-flex">
+    <!-- Sidebar -->
+    <div class="sidebar p-3">
+      <h3 class="mb-3">
+        <i class="bi bi-graph-up-arrow me-2"></i> AI-CFO
+      </h3>
+      <a href="{% url 'CFO:dashboard' %}"><i class="bi bi-speedometer2"></i> Dashboard</a>
+      <a href="{% url 'CFO:financial_analysis' %}"><i class="bi bi-bar-chart-line"></i> Financial Analysis</a>
+      <a href="{% url 'CFO:cash_flow' %}"><i class="bi bi-cash-stack"></i> Cash Flow</a>
+      <a href="{% url 'CFO:scenario_planning' %}"><i class="bi bi-lightbulb"></i> Scenario Planning <span class="badge bg-success">New</span></a>
+      <a href="{% url 'CFO:ai_assistant' %}"><i class="bi bi-briefcase"></i> Chatbot</a>
+   
+      <hr class="text-light">
+      <!-- <a href="{% url 'CFO:reports_generator' %}"><i class="bi bi-file-earmark-text"></i> Reports Generator</a> -->
+      <a href="{% url 'CFO:performance_metrics' %}"><i class="bi bi-clipboard-data"></i> Performance Metrics</a>
+      <a href="{% url 'CFO:goal_tracking' %}"><i class="bi bi-bullseye"></i> Goal Tracking</a>
+      <!-- <a href="{% url 'CFO:export_center' %}"><i class="bi bi-download"></i> Export Center</a> -->
+      <a href="{% url 'CFO:help_view' %}"><i class="bi bi-question-circle"></i> Help & Support</a>
+        {% if user.is_authenticated %}
+          <li><a class="dropdown-item" href="{% url 'CFO:settings_view' %}">Settings</a></li>
+        {% endif %}
+    </div>
+
+    <!-- Main content -->
+<div class="flex-grow-1">
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm py-3">
+    <div class="container navbar-brand fw-bold text-success d-flex align-items-center">
+      </i> CFO Assistant
+      </a>
+
+      <!-- Toggler for mobile -->
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <!-- Navbar links -->
+      <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+        <ul class="navbar-nav align-items-center gap-2">
+
+          {% if user.is_authenticated %}
+          <!-- Home button -->
+          <li class="nav-item">
+            <a href="{% url 'CFO:index' %}" class="btn btn-outline-success btn-sm px-3">
+              <i class="bi bi-house-door me-1"></i> Home
+            </a>
+          </li>
+
+          <!-- Logout button -->
+          <li class="nav-item">
+            <a href="{% url 'CFO:logout' %}" class="btn btn-danger btn-sm px-3">
+              <i class="bi bi-box-arrow-right me-1"></i> Logout
+            </a>
+          </li>
+          {% else %}
+          <!-- Login -->
+          <li class="nav-item">
+            <a href="{% url 'CFO:login' %}" class="btn btn-success btn-sm px-3">
+              <i class="bi bi-box-arrow-in-right me-1"></i> Login
+            </a>
+          </li>
+
+          <!-- Sign Up -->
+          <li class="nav-item">
+            <a href="{% url 'CFO:signup' %}" class="btn btn-primary btn-sm px-3">
+              <i class="bi bi-person-plus me-1"></i> Sign Up
+            </a>
+          </li>
+          {% endif %}
+
+          <!-- Options Dropdown -->
+          <li class="nav-item dropdown">
+            <button class="btn btn-outline-info btn-sm px-3 dropdown-toggle" data-bs-toggle="dropdown">
+              Options
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                {% if user.is_authenticated %}
+                  <li><a class="dropdown-item" href="{% url 'CFO:settings_view' %}">Settings</a></li>
+                {% endif %}
+              <li><a class="dropdown-item" href="{% url 'CFO:help_view' %}">Help</a></li>
+              <li><a class="dropdown-item" href="{% url 'CFO:contact_view' %}">Contact</a></li>
+            </ul>
+          </li>
+
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  {% block content %}{% endblock %}
+</div>
+
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+window.addEventListener("beforeunload", function () {
+    navigator.sendBeacon("/logout/");
+});
+</script>
+
+</body>
+</html>

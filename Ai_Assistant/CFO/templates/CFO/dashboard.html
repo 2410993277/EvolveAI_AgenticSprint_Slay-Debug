@@ -1,0 +1,218 @@
+{% extends "CFO/base.html" %}
+{% block content %}
+
+<style>
+/* General Styles */
+body {
+    font-family: 'Inter', sans-serif;
+    background: #f8f9fa;
+    color: #212529;
+    margin: 0;
+}
+
+/* Full height flex wrapper */
+.dashboard-wrapper {
+    display: flex;
+    min-height: 100vh; /* ensures sidebar + content stretch full screen */
+}
+
+/* Sidebar */
+.dashboard-sidebar {
+    width: 250px;
+    background: linear-gradient(160deg, #527a69 0%, #127f5d 100%);
+    color: #fff;
+    padding: 20px;
+    box-shadow: 2px 0 12px rgba(0,0,0,0.15);
+    flex-shrink: 0;
+}
+
+.dashboard-sidebar a {
+    display: block;
+    color: #fff;
+    text-decoration: none;
+    margin: 12px 0;
+    font-weight: 500;
+}
+
+.dashboard-sidebar a:hover {
+    text-decoration: underline;
+}
+
+/* Main content */
+.dashboard-content {
+    flex-grow: 1;
+    padding: 20px 40px;
+}
+
+/* Welcome message */
+.text-end span {
+    font-size: 1rem;
+}
+
+/* Hero Section */
+.text-center.my-5 h2 {
+    font-size: 2.5rem;
+    font-weight: 700;
+}
+
+.text-center.my-5 p {
+    font-size: 1.1rem;
+}
+
+/* Badges */
+.text-center .badge {
+    font-size: 0.9rem;
+    padding: 0.5rem 0.8rem;
+    font-weight: 500;
+}
+
+/* Upload Box */
+.upload-box {
+    background: #fff;
+    border-radius: 12px;
+    padding: 30px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    max-width: 800px;
+    margin: auto;
+}
+
+.upload-box:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+}
+
+.upload-box h5 {
+    font-weight: 600;
+}
+
+.upload-box p {
+    color: #6c757d;
+}
+
+.upload-box .btn {
+    font-weight: 600;
+}
+
+/* Feature Cards */
+.feature-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 15px;
+    margin: auto ;   
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    text-align: center;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    max-width: 370px;    /* limit width so cards don't stretch too much */
+}
+
+.row.mt-5.g-4 {
+    justify-content: center;  /* center the row of cards */
+}
+
+/* Feature Card icons and text remain same */
+.feature-card i {
+    font-size: 2.2rem;
+    margin-bottom: 15px;
+    color: #0d6efd;
+}
+
+.feature-card h5 {
+    font-weight: 600;
+    margin-bottom: 10px;
+}
+
+.feature-card p {
+    color: #6c757d;
+    font-size: 0.95rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .text-center.my-5 h2 {
+        font-size: 2rem;
+    }
+    .upload-box {
+        padding: 20px;
+    }
+    .dashboard-wrapper {
+        flex-direction: column;
+    }
+    .dashboard-sidebar {
+        width: 100%;
+        min-height: auto;
+    }
+    .feature-card {
+        max-width: 90%;   /* adjust for mobile screens */
+        margin: 10px auto;
+    }
+}
+</style>
+
+    <!-- Main Content -->
+    <div class="dashboard-content">
+        {% if user.is_authenticated %}
+          <div class="text-end mb-3 d-flex justify-content-end align-items-center" style="gap:10px; color: navy; font-style:italic;">
+                <span>Welcome, {{ user.username }}!</span>
+                <a href="{% url 'CFO:profile' %}" class="text-decoration-none">
+                    <i class="bi bi-person-circle fs-4 text-primary"></i>
+                </a>
+            </div>
+        {% else %}
+          <a href="{% url 'CFO:login' %}" class="btn btn-primary btn-sm">Login</a>
+        {% endif %}
+
+        <div class="text-center my-5">
+            <h2 class="fw-bold">Transform Your Financial Data Into Insights</h2>
+            <p class="text-muted">Upload your P&L statements, balance sheets, or cash flow reports.<br>
+                Get instant analysis, runway calculations, and actionable recommendations.</p>
+
+            <div class="d-flex justify-content-center my-3">
+                <span class="badge bg-success mx-1">Excel & CSV</span>
+                <span class="badge bg-primary mx-1">PDF Reports</span>
+                <span class="badge bg-info mx-1">Real-time Analysis</span>
+            </div>
+        </div>
+
+        <!-- Upload box -->
+        <div class="upload-box text-center">
+            <i class="bi bi-cloud-arrow-up fs-1 text-primary"></i>
+            <h5 class="mt-3">Upload Financial Documents</h5>
+            <p class="text-muted">Drag & drop your P&L statements, balance sheets, or cash flow reports</p>
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <a href="{% url 'CFO:upload_report' %}" class="btn btn-primary">+ Upload Report</a>
+            </form>
+        </div>
+
+        <!-- Feature Cards Section -->
+        <div class="row mt-5 g-4">
+            <div class="col-md-4">
+                <div class="feature-card">
+                    <i class="bi bi-clock-history"></i>
+                    <h5>Previous Reports</h5>
+                    <p>Check your personalized report history anytime, securely saved for your account.</p>
+                    <a href="{% url 'CFO:upload_report' %}" class="btn btn-outline-primary btn-sm mt-2">View History</a>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="feature-card">
+                    <i class="bi bi-graph-up-arrow"></i>
+                    <h5>Financial Health</h5>
+                    <p>Monitor your revenue growth, profitability trends, and key financial KPIs.</p>
+                    <a href="{% url 'CFO:financial_health' %}" class="btn btn-outline-primary btn-sm mt-2">Explore</a>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="feature-card">
+                    <i class="bi bi-shield-check"></i>
+                    <h5>Risk Alerts</h5>
+                    <p>Receive notifications of financial risks or anomalies with actionable insights.</p>
+                    <a href="{% url 'CFO:risk_alerts' %}" class="btn btn-outline-primary btn-sm mt-2">Check Alerts</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

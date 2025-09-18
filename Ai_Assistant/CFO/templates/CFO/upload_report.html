@@ -1,0 +1,306 @@
+{% extends "CFO/base.html" %}
+
+{% block content %}
+<style>
+body {
+  background-color: #f4f6f9;
+  font-family: 'Inter', sans-serif;
+}
+
+/* Layout */
+.upload-container {
+  max-width: 1100px;
+  margin: 50px auto;
+  padding: 0 20px;
+}
+
+.page-header {
+  margin-bottom: 30px;
+}
+.page-header h2 {
+  font-size: 1.9rem;
+  font-weight: 600;
+  color: #212529;
+}
+.page-header small {
+  color: #6c757d;
+  font-size: 0.9rem;
+}
+
+/* Grid Layout */
+.upload-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 25px;
+}
+
+/* Upload Card */
+.upload-card {
+  background: #fff;
+  border: 1px solid #dee2e6;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  padding: 35px 40px;
+}
+.upload-card h3 {
+  font-size: 1.4rem;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: #212529;
+}
+.upload-card p.description {
+  font-size: 0.92rem;
+  color: #6c757d;
+  margin-bottom: 25px;
+}
+
+/* Upload Box */
+.upload-box {
+  border: 2px dashed #adb5bd;
+  border-radius: 8px;
+  padding: 28px;
+  text-align: center;
+  margin-bottom: 15px;
+  transition: border-color 0.3s ease, background 0.3s ease;
+  cursor: pointer;
+}
+.upload-box.hover {
+  border-color: #0d6efd;
+  background: #e7f1ff;
+}
+.upload-box i {
+  font-size: 2.2rem;
+  color: #0d6efd;
+  margin-bottom: 10px;
+}
+.upload-box p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #495057;
+}
+#file-name {
+  margin-top: 8px;
+  font-size: 0.9rem;
+  color: #212529;
+}
+
+/* Divider */
+.section-divider {
+  border-top: 1px solid #e9ecef;
+  margin: 25px 0;
+}
+
+/* Form Fields */
+.upload-card form label {
+  font-weight: 500;
+  font-size: 0.95rem;
+  margin-bottom: 6px;
+  display: block;
+  color: #212529;
+}
+.upload-card input[type="file"],
+.upload-card input[type="text"],
+.upload-card input[type="number"],
+.upload-card select {
+  width: 100%;
+  border-radius: 6px;
+  padding: 10px 12px;
+  border: 1px solid #ced4da;
+  font-size: 0.95rem;
+  margin-bottom: 18px;
+}
+.upload-card input:focus,
+.upload-card select:focus {
+  border-color: #0d6efd;
+  box-shadow: 0 0 0 0.15rem rgba(13,110,253,.15);
+  outline: none;
+}
+
+/* Buttons */
+.upload-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 10px;
+}
+.upload-actions button {
+  min-width: 120px;
+  padding: 10px 16px;
+  border-radius: 6px;
+  font-weight: 500;
+  font-size: 0.95rem;
+}
+.upload-actions .btn-primary {
+  background-color: #0d6efd;
+  border: none;
+  color: #fff;
+}
+.upload-actions .btn-primary:hover {
+  background-color: #0b5ed7;
+}
+.upload-actions .btn-outline-secondary {
+  border: 1px solid #ced4da;
+  background: #fff;
+  color: #495057;
+}
+.upload-actions .btn-outline-secondary:hover {
+  background: #f1f3f5;
+}
+
+/* Summary Card */
+.summary-card {
+  background: #fff;
+  border: 1px solid #dee2e6;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  padding: 25px 30px;
+}
+.summary-card h4 {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 20px;
+  color: #212529;
+}
+
+/* Last Uploads */
+.upload-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.upload-list li {
+  padding: 12px 0;
+  border-bottom: 1px solid #f1f3f5;
+}
+.upload-list li:last-child {
+  border-bottom: none;
+}
+.upload-list strong {
+  display: block;
+  font-size: 0.95rem;
+  color: #212529;
+}
+.upload-list small {
+  color: #6c757d;
+  font-size: 0.85rem;
+}
+</style>
+
+<div class="upload-container">
+  <!-- Header -->
+  <div class="page-header">
+    <h2>Upload Financial Report</h2>
+    <small>Dashboard / Reports / Upload</small>
+  </div>
+
+  <!-- Grid -->
+  <div class="upload-grid">
+    <!-- Left: Upload Form -->
+    <div class="upload-card">
+      <h3>Report Submission</h3>
+      <p class="description">
+        Please upload your financial report in PDF, Excel, or CSV format. 
+        Maximum file size: <strong>10MB</strong>.
+      </p>
+
+      <!-- Drag & Drop -->
+      <div class="upload-box">
+        <i class="bi bi-cloud-arrow-up"></i>
+        <p>Drag & drop your file here, or click below to browse.</p>
+        <div id="file-name"></div>
+      </div>
+
+      <div class="section-divider"></div>
+
+      <!-- Form -->
+      <form method="post" enctype="multipart/form-data" action="{% url 'CFO:upload_report' %}">
+        {% csrf_token %}
+
+        <!-- Render form fields one by one for cleaner styling -->
+        <div class="mb-3">
+          {{ form.title.label_tag }}
+          {{ form.title }}
+        </div>
+        <div class="mb-3">
+          {{ form.file.label_tag }}
+          {{ form.file }}
+        </div>
+
+        <div class="upload-actions">
+          <button type="reset" class="btn btn-outline-secondary">Cancel</button>
+          <button type="submit" class="btn btn-primary">Upload Report</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Right: Summary Panel -->
+    <div class="summary-card">
+      <h4>Recent Uploads</h4>
+      {% if recent_reports %}
+        <ul class="upload-list">
+          {% for report in recent_reports %}
+            <li>
+              <a href="{% url 'CFO:report_detail' report.pk %}" style="text-decoration:none;">
+                <strong>{{ report.title }}</strong>
+
+              </a>
+              <small>
+                Uploaded on {{ report.uploaded_at|date:"M d, Y" }} · 
+                {% if report.size %}
+                  {{ report.size|filesizeformat }}
+                {% endif %}
+              </small>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p style="color:#6c757d; font-size:0.9rem;">No reports uploaded yet.</p>
+      {% endif %}
+    </div>
+
+  </div>
+</div>
+
+<script>
+// Get elements
+const uploadBox = document.querySelector('.upload-box');
+const fileInput = document.querySelector('input[type="file"]');
+const fileNameDisplay = document.getElementById('file-name');
+
+// Click to open file browser
+uploadBox.addEventListener('click', () => fileInput.click());
+
+// Show selected file name when chosen manually
+fileInput.addEventListener('change', () => {
+  if (fileInput.files.length > 0) {
+    fileNameDisplay.textContent = fileInput.files[0].name;
+  } else {
+    fileNameDisplay.textContent = '';
+  }
+});
+
+// Drag over effect
+uploadBox.addEventListener('dragover', (e) => {
+  e.preventDefault();
+  uploadBox.classList.add('hover');
+});
+
+// Drag leave effect
+uploadBox.addEventListener('dragleave', (e) => {
+  e.preventDefault();
+  uploadBox.classList.remove('hover');
+});
+
+// Drop file
+uploadBox.addEventListener('drop', (e) => {
+  e.preventDefault();
+  uploadBox.classList.remove('hover');
+
+  const files = e.dataTransfer.files;
+  if (files.length > 0) {
+    fileInput.files = files; // assign dropped file to input
+    fileNameDisplay.textContent = files[0].name;
+  }
+});
+</script>
+{% endblock %}

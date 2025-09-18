@@ -1,0 +1,42 @@
+{% extends "CFO/base.html" %}
+{% block content %}
+
+<div class="container py-5">
+    <h2 class="mb-4">💹 Financial Health Overview</h2>
+
+    <!-- Health Score -->
+    <div class="card p-4 mb-4 shadow-sm">
+        <h4>Financial Health Score</h4>
+        <p class="display-5 text-primary fw-bold">{{ health_score }} / 100</p>
+        <small class="text-muted">Based on revenue, expenses, debt, and liquidity metrics</small>
+    </div>
+
+    <!-- Strengths -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card p-3 mb-3 shadow-sm">
+                <h5 class="text-success">✅ Strengths</h5>
+                <ul>
+                    {% for item in strengths %}
+                        <li>{{ item }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+
+        <!-- Weaknesses -->
+        <div class="col-md-6">
+            <div class="card p-3 mb-3 shadow-sm">
+                <h5 class="text-danger">⚠ Weaknesses</h5>
+                <ul>
+                    {% for item in weaknesses %}
+                        <li>{{ item }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,253 @@
+{% extends "CFO/base.html" %}
+{% block content %}
+
+<style>
+    .chat-container {
+        display: flex;
+        flex-direction: column;
+        height: 600px;
+        border-radius: 15px;
+        overflow: hidden;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+
+    .chat-messages {
+        flex: 1;
+        padding: 20px;
+        overflow-y: auto;
+        background: rgba(255, 255, 255, 0.95);
+    }
+
+    .message {
+        margin-bottom: 15px;
+        animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .user-message {
+        display: flex;
+        justify-content: flex-end;
+    }
+
+    .user-message .message-bubble {
+        background: #007bff;
+        color: white;
+        padding: 12px 16px;
+        border-radius: 18px 18px 4px 18px;
+        max-width: 70%;
+        word-wrap: break-word;
+    }
+
+    .ai-message {
+        display: flex;
+        justify-content: flex-start;
+    }
+
+    .ai-message .message-bubble {
+        background: #f8f9fa;
+        color: #333;
+        padding: 12px 16px;
+        border-radius: 18px 18px 18px 4px;
+        max-width: 70%;
+        border-left: 4px solid #28a745;
+        word-wrap: break-word;
+    }
+
+    .chat-input-area {
+        padding: 10px 15px;
+        background: rgba(255, 255, 255, 0.9);
+        border-top: 1px solid #ddd;
+    }
+
+    .quick-suggestions {
+        margin-bottom: 10px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 5px;
+    }
+
+    .suggestion-btn {
+        font-size: 12px;
+        padding: 5px 10px;
+    }
+
+    .typing-indicator {
+        display: flex;
+        padding: 10px 16px;
+        background: #f8f9fa;
+        border-radius: 18px;
+        align-items: center;
+        gap: 3px;
+    }
+
+    .typing-dot {
+        height: 8px;
+        width: 8px;
+        border-radius: 50%;
+        background: #999;
+        animation: typingDots 1.4s infinite ease-in-out both;
+    }
+
+    .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+    .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+
+    @keyframes typingDots {
+        0%, 80%, 100% { transform: scale(0); opacity: 0.5; }
+        40% { transform: scale(1); opacity: 1; }
+    }
+
+    .insights-panel {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        border-radius: 15px;
+        padding: 20px;
+        color: white;
+        margin-bottom: 20px;
+    }
+
+    .insight-card {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 10px;
+        padding: 15px;
+        margin-bottom: 10px;
+        backdrop-filter: blur(10px);
+    }
+</style>
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-robot me-2"></i> CFO AI Assistant</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="chat-container">
+                        <div class="chat-messages" id="chatMessages">
+                            <div class="message ai-message">
+                                <div class="message-bubble">
+                                    <strong>AI Assistant:</strong> Hello! I'm your CFO AI Assistant. I can help you with financial analysis, cash flow management, profit optimization, and strategic planning. What would you like to know?
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="chat-input-area">
+                            <div class="quick-suggestions">
+                                <button class="btn btn-outline-primary btn-sm suggestion-btn" onclick="sendQuickQuery('Analyze my cash flow')">Cash Flow Analysis</button>
+                                <button class="btn btn-outline-primary btn-sm suggestion-btn" onclick="sendQuickQuery('How to improve profit margins?')">Improve Margins</button>
+                                <button class="btn btn-outline-primary btn-sm suggestion-btn" onclick="sendQuickQuery('Revenue growth strategies')">Growth Strategies</button>
+                                <button class="btn btn-outline-primary btn-sm suggestion-btn" onclick="sendQuickQuery('Cost optimization tips')">Cost Optimization</button>
+                            </div>
+                            <div class="input-group">
+                                <input type="text" id="userInput" class="form-control" placeholder="Ask me about your finances..." onkeypress="handleKeyPress(event)">
+                                <button class="btn btn-primary" onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+<script>
+    function sendMessage() {
+        const input = document.getElementById('userInput');
+        const message = input.value.trim();
+        if (!message) return;
+
+        addMessage(message, 'user');
+        input.value = '';
+        showTypingIndicator();
+
+        fetch('/ai-assistant/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: `query=${encodeURIComponent(message)}`
+        })
+        .then(response => response.json())
+        .then(data => {
+            hideTypingIndicator();
+            addMessage(data.response, 'ai');
+        })
+        .catch(error => {
+            hideTypingIndicator();
+            addMessage('Sorry, I encountered an error. Please try again.', 'ai');
+            console.error('Error:', error);
+        });
+    }
+
+    function sendQuickQuery(query) {
+        document.getElementById('userInput').value = query;
+        sendMessage();
+    }
+
+    function addMessage(message, sender) {
+        const messagesContainer = document.getElementById('chatMessages');
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message ${sender}-message`;
+
+        const bubble = document.createElement('div');
+        bubble.className = 'message-bubble';
+
+        if (sender === 'ai') {
+            bubble.innerHTML = `<strong>AI Assistant:</strong> ${message}`;
+        } else {
+            bubble.textContent = message;
+        }
+
+        messageDiv.appendChild(bubble);
+        messagesContainer.appendChild(messageDiv);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+
+    function showTypingIndicator() {
+        const messagesContainer = document.getElementById('chatMessages');
+        const typingDiv = document.createElement('div');
+        typingDiv.className = 'message ai-message';
+        typingDiv.id = 'typingIndicator';
+        typingDiv.innerHTML = `
+            <div class="typing-indicator" style="display: flex;">
+                <span class="typing-dot"></span>
+                <span class="typing-dot"></span>
+                <span class="typing-dot"></span>
+            </div>
+        `;
+        messagesContainer.appendChild(typingDiv);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+
+    function hideTypingIndicator() {
+        const indicator = document.getElementById('typingIndicator');
+        if (indicator) indicator.remove();
+    }
+
+    function handleKeyPress(event) {
+        if (event.key === 'Enter') sendMessage();
+    }
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let cookie of cookies) {
+                cookie = cookie.trim();
+                if (cookie.startsWith(name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.slice(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+</script>
+
+{% endblock %}

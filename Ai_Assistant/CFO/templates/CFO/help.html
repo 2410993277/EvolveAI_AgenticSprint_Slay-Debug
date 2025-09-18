@@ -1,0 +1,44 @@
+{% extends 'CFO/base.html' %}
+
+{% block content %}
+<div class="container my-4">
+    <div class="help-box p-4 bg-light shadow-sm rounded-3">
+        <h4 class="mb-3 text-primary">
+            <i class="bi bi-question-circle-fill me-2"></i> Help & Support
+        </h4>
+        <p class="text-muted">Find answers to common questions and learn how to use the application efficiently.</p>
+
+        <!-- FAQ Section -->
+        <div class="faq mt-4">
+            <h5>Frequently Asked Questions</h5>
+            <ul class="list-group list-group-flush mt-2">
+                <li class="list-group-item">
+                    <strong>How do I upload data?</strong>
+                    <p class="text-muted mb-0">Go to the dashboard and click on the "Upload" button. Follow the
+                        instructions to upload your files.</p>
+                </li>
+                <li class="list-group-item">
+                    <strong>How do I reset my password?</strong>
+                    <p class="text-muted mb-0">Go to your profile settings and select "Change Password". Follow the
+                        prompts to update it.</p>
+                </li>
+                <li class="list-group-item">
+                    <strong>Who can I contact for support?</strong>
+                    <p class="text-muted mb-0">You can email <a
+                            href="mailto:support@example.com">support@example.com</a> for any technical assistance.</p>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Tips Section -->
+        <div class="tips mt-4">
+            <h5>Tips for Using the App</h5>
+            <ul class="list-unstyled text-muted">
+                <li>✔ Keep your data updated regularly for accurate reports.</li>
+                <li>✔ Use the search feature to quickly locate items or records.</li>
+                <li>✔ Check the notifications panel for system updates.</li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}

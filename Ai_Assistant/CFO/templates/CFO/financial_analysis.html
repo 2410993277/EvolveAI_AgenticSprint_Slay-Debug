@@ -1,0 +1,100 @@
+{% extends "CFO/base.html" %}
+
+{% block content %}
+<div class="container">
+    <h2 class="text-center mb-4">Financial Analysis</h2>
+
+    {% if error %}
+        <div class="alert alert-warning">{{ error }}</div>
+    {% else %}
+    <!-- Summary Cards -->
+    <div class="row text-center mb-4">
+        <div class="col"><h5>Total Revenue</h5><p>{{ total_revenue }}</p></div>
+        <div class="col"><h5>Total Expenses</h5><p>{{ total_expenses }}</p></div>
+        <div class="col"><h5>Net Profit</h5><p>{{ net_profit }}</p></div>
+        <div class="col"><h5>Profit Margin</h5><p>{{ profit_margin }}%</p></div>
+    </div>
+
+    <!-- Chart Container -->
+    <div class="card p-3 mb-4">
+        <canvas id="profitChart" style="height: 400px;"></canvas>
+    </div>
+
+    <!-- Optional Extra Analysis Cards -->
+    <div class="row text-center mb-4">
+        <div class="col"><h5>Burn Rate</h5><p>{{ burn_rate }}</p></div>
+        <div class="col"><h5>Runway (months)</h5><p>{{ runway }}</p></div>
+        <div class="col"><h5>Revenue Growth</h5><p>{{ growth }}%</p></div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+let profitChart = null;
+
+function renderChart(labels, profits, revenues, expenses, cash) {
+    const ctx = document.getElementById('profitChart').getContext('2d');
+
+    if (profitChart) {
+        profitChart.destroy(); // destroy previous instance
+    }
+
+    profitChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Revenue',
+                    data: revenues,
+                    borderColor: '#4CAF50',
+                    backgroundColor: 'rgba(76, 175, 80, 0.1)',
+                    tension: 0.3,
+                    fill: true,
+                },
+                {
+                    label: 'Profit',
+                    data: profits,
+                    borderColor: '#36A2EB',
+                    backgroundColor: 'rgba(54, 162, 235, 0.1)',
+                    tension: 0.3,
+                    fill: true,
+                },
+                {
+                    label: 'Expenses',
+                    data: expenses,
+                    borderColor: '#FF6384',
+                    backgroundColor: 'rgba(255, 99, 132, 0.1)',
+                    tension: 0.3,
+                    fill: true,
+                },
+                {
+                    label: 'Cash Balance',
+                    data: cash,
+                    borderColor: '#FFCE56',
+                    backgroundColor: 'rgba(255, 206, 86, 0.1)',
+                    tension: 0.3,
+                    fill: true,
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+                mode: 'index',
+                intersect: false,
+            },
+            scales: {
+                y: { beginAtZero: true }
+            }
+        }
+    });
+}
+
+// Render chart with Django context variables
+renderChart({{ months }}, {{ profit_trend }}, {{ revenue_trend }}, {{ expense_trend }}, {{ cash_trend }});
+</script>
+{% endblock %}
